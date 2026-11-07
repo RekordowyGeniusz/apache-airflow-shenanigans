@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Airflow runtime state (created by the Docker Compose stack)
+logs/
+plugins/__pycache__/
+airflow.db
+*.generated
+
+# Local configuration and secrets
+.env
+.kata.local.toml
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
