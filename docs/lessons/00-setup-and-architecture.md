@@ -23,7 +23,9 @@ In this stack each one is its own container:
 | `airflow-init` | one-off | Migrates the database schema, creates the admin user, fixes folder ownership, then exits. |
 
 The folders `dags/`, `logs/`, `plugins/` and `config/` on your machine are mounted into every
-Airflow container at `/opt/airflow/...`. Edit a DAG locally and the DAG processor picks it up.
+Airflow container at `/opt/airflow/...`. Edit a DAG locally and the DAG processor picks it up:
+changes to an existing file within about 30 seconds, a brand-new file within about 5 minutes
+(the DAG folder is rescanned every `[dag_processor] refresh_interval`, 300s by default).
 
 ### How one task run flows through them
 
@@ -38,7 +40,8 @@ sequenceDiagram
 
     P->>F: import the file
     P->>DB: store serialized DAG
-    S->>DB: DAG run due? create DAG run + task instances
+    Note over S,A: Scheduled DAG: the scheduler creates the run.<br/>Manual trigger: the API server does.
+    S->>DB: DAG run due or triggered? create task instances
     S->>S: task dependencies met: queue it in the executor
     S->>T: start task subprocess
     T->>A: Task Execution API: "running", fetch context
@@ -65,9 +68,12 @@ All commands run from the repository root (the folder with `docker-compose.yaml`
 cp .env.example .env
 ```
 
-Edit `.env` and set `AIRFLOW_UID` to the output of `id -u` (usually `1000`), so files the
-containers create in `logs/` belong to you. `.env` is git-ignored. All its variables have
-defaults, so it is optional; without it you can also run `export AIRFLOW_UID=$(id -u)` first.
+Edit `.env` and set `AIRFLOW_UID` to the output of `id -u` (usually `1000`). `.env` is
+git-ignored. **Do not skip this on Linux/WSL:** on first start `airflow-init` gives the mounted
+`dags/`, `logs/`, `plugins/` and `config/` folders to `AIRFLOW_UID` (default `50000`, a user that
+does not exist on your machine), and you would need `sudo` to edit your own DAGs. Without a
+`.env`, run `export AIRFLOW_UID=$(id -u)` in the shell before every `docker compose` command.
+The other variables have working defaults.
 
 ### 2. Start, stop, reset
 

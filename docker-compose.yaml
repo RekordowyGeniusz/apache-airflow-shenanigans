@@ -24,7 +24,8 @@
 #   - LocalExecutor instead of CeleryExecutor, so no Redis, Celery worker or Flower.
 #     Tasks run as subprocesses of the scheduler container.
 #   - Example DAGs are off; only this repository's DAGs show up.
-#   - The .env file is optional; see .env.example for the supported variables.
+#   - The scheduler waits for a healthy API server, since its tasks report through it.
+#   - The .env file may be missing (then set AIRFLOW_UID in the shell); see .env.example.
 #
 # WARNING: This configuration is for local learning. Do not use it in production.
 ---
@@ -187,7 +188,6 @@ services:
         /entrypoint airflow config list >/dev/null
         echo "Changing ownership of files in /opt/airflow to ${AIRFLOW_UID:-50000}:0"
         chown -R "${AIRFLOW_UID:-50000}:0" /opt/airflow/
-        chown -R "${AIRFLOW_UID:-50000}:0" /opt/airflow/{logs,dags,plugins,config}
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env

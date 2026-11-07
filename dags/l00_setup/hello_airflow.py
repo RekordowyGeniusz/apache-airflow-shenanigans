@@ -17,7 +17,7 @@ from airflow.sdk import dag, task
     catchup=False,
     tags=["lesson-00"],
 )
-def hello_airflow():
+def hello_airflow() -> None:
     @task
     def say_hello() -> str:
         # print() output ends up in the task log, visible in the UI.

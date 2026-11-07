@@ -29,7 +29,7 @@ explaining what to run, what to watch in the UI, and exercises to try.
 Requires Docker with Compose v2 (4GB+ memory for Docker).
 
 ```bash
-cp .env.example .env        # optional: set AIRFLOW_UID=$(id -u)
+cp .env.example .env        # then set AIRFLOW_UID to the output of `id -u`
 docker compose up -d        # UI at http://localhost:8080, login airflow / airflow
 docker compose down         # stop (add -v to also wipe the database)
 ```
