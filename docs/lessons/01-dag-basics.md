@@ -55,8 +55,8 @@ SQL, HTTP, cloud services). Data passed between tasks is stored as an **XCom** i
 database, so keep it small; lesson 03 goes deeper.
 
 The calls inside a `@dag` function do not run your task code. They only *build the graph* when
-the DAG processor parses the file. Your function bodies run later, one task at a time, when the
-scheduler runs them. That is also why `pipeline_taskflow()` must be called at the bottom of the
+the DAG processor parses the file. Your function bodies run later, each as its own task instance,
+when the executor runs it. That is also why `pipeline_taskflow()` must be called at the bottom of the
 file: calling it is what creates the DAG.
 
 ### Dependencies
@@ -84,7 +84,7 @@ override any of them (`retries_and_default_args.py`):
 ```python
 default_args = {"owner": "learner", "retries": 2, "retry_delay": timedelta(seconds=10)}
 
-@task(retries=0, owner="someone_else")  # this task ignores the DAG defaults
+@task(retries=0, owner="someone_else")  # overrides these two; retry_delay still comes from the defaults
 def report(result: str) -> None: ...
 ```
 
@@ -123,15 +123,15 @@ You should now see five `l01_` DAGs (filter by the `lesson-01` tag).
 ### 2. Dependency shapes
 
 Trigger `l01_dependency_shapes` and look at the **Graph** view. Match each group of boxes to the
-code. In the **Grid** view, notice that the first task of every group ran at the same time: the
-groups are independent.
+code. The groups are not connected, so the first task of every group can run at the same time;
+compare their start times in the **Grid** view.
 
 ### 3. Retries
 
 Trigger `l01_retries_and_default_args` and watch the **Grid** view. `flaky_task` turns
 `up_for_retry` (yellow), waits 10 seconds, then succeeds. Click it: the **Logs** tab has a
-picker for attempt 1 (with the `RuntimeError`) and attempt 2. Open **Details** to see its
-`owner` and `retries`, then compare with `report`.
+picker for attempt 1 (with the `RuntimeError`) and attempt 2. `report` has `retries=0`: if it
+failed, it would go straight to `failed`.
 
 ### 4. Your old DAG
 
@@ -159,11 +159,12 @@ docker compose exec airflow-scheduler airflow dags test l01_retries_and_default_
    `start >> [extract_task, extract_task_2] >> transform_task`. Watch the Graph view.
 4. **Convert a DAG.** Rewrite `tutorial_example.py` with `@dag` and `@task`, calling
    `funny_func1()` inside the task. Give it a new `dag_id` so both versions show up.
-5. **Forget the call.** Note the `last_parsed_time` in
-   `airflow dags details l01_pipeline_taskflow`. Comment out `pipeline_taskflow()` at the bottom
-   of `pipeline_taskflow.py` and reserialize. `list-import-errors` stays empty, but
-   `last_parsed_time` no longer changes: the file parses fine, it just no longer creates a DAG,
-   so Airflow keeps the last version it saw. Restore the line and reserialize.
+5. **Forget the call.** Comment out `pipeline_taskflow()` at the bottom of
+   `pipeline_taskflow.py` and reserialize. `list-import-errors` stays empty: the file is valid
+   Python, it just no longer creates a DAG. Within a couple of minutes Airflow marks the DAG
+   **stale** and hides it from the DAG list; check with
+   `airflow dags details l01_pipeline_taskflow | grep is_stale`. Restore the line, reserialize,
+   and it comes back with its run history: stale DAGs are hidden, not deleted.
 
 ## Recap
 

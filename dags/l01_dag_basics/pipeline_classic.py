@@ -10,6 +10,7 @@ from datetime import datetime
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
+from airflow.sdk.types import RuntimeTaskInstanceProtocol
 
 
 def extract() -> list[int]:
@@ -17,13 +18,13 @@ def extract() -> list[int]:
     return [3, 1, 4, 1, 5, 9, 2, 6]
 
 
-def transform(ti) -> int:
+def transform(ti: RuntimeTaskInstanceProtocol) -> int:
     # Airflow passes context values (ti = the task instance) to arguments with matching names.
     numbers = ti.xcom_pull(task_ids="extract")
     return sum(numbers)
 
 
-def load(ti) -> None:
+def load(ti: RuntimeTaskInstanceProtocol) -> None:
     total = ti.xcom_pull(task_ids="transform")
     print(f"Loaded total: {total}")
 
