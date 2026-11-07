@@ -26,4 +26,12 @@ explaining what to run, what to watch in the UI, and exercises to try.
 
 ## Running
 
-Set up in lesson 00; see `docs/lessons/00-setup-and-architecture.md` once it lands.
+Requires Docker with Compose v2 (4GB+ memory for Docker).
+
+```bash
+cp .env.example .env        # optional: set AIRFLOW_UID=$(id -u)
+docker compose up -d        # UI at http://localhost:8080, login airflow / airflow
+docker compose down         # stop (add -v to also wipe the database)
+```
+
+Details, the architecture and the first DAG: [lesson 00](docs/lessons/00-setup-and-architecture.md).
