@@ -5,6 +5,7 @@ A learning repository for Apache Airflow 3. The reader is learning Airflow, so c
 ## Layout
 
 - `docker-compose.yaml`, `.env.example`: the Airflow stack (set up in lesson 00).
+- `config/` (generated `airflow.cfg`, ignored), `plugins/`, `logs/` (ignored): mounted into the containers.
 - `dags/lNN_<topic>/`: DAGs for lesson NN. One DAG teaches one idea. DAG ids start with `lNN_`.
 - `dags/lNN_<topic>/callables/` or plain modules: task logic kept out of DAG files when it grows.
 - `docs/lessons/NN-<topic>.md`: the lesson guide.
