@@ -1,0 +1,15 @@
+"""Lesson 02: schedule=None. The scheduler never creates a run; only a trigger does."""
+
+from datetime import datetime
+
+from airflow.sdk import DAG
+from l02_scheduling.callables.show_times import show_times
+
+with DAG(
+    dag_id="l02_schedule_manual",
+    schedule=None,
+    start_date=datetime(2026, 1, 1),
+    catchup=False,
+    tags=["lesson-02"],
+) as dag:
+    show_times()
